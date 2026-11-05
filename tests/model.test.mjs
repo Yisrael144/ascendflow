@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {initial,validate,invoiceTotal} from '../app/model.ts';
+import {parseCSV} from '../app/csv.ts';
+test('CSV preserves quoted commas and multiline notes',()=>{assert.deepEqual(parseCSV('name,email,company\r\n"Ada, Lee",ada@example.com,"One\nTwo"'),[{name:'Ada, Lee',email:'ada@example.com',company:'One\nTwo'}]);});
+test('CSV rejects ambiguous rows',()=>{assert.throws(()=>parseCSV('name,email\nAda'),/expected/);assert.throws(()=>parseCSV('name,name\nA,B'),/Duplicate/);});
+test('invoice calculation matches observed USD18 journey',()=>{assert.deepEqual(invoiceTotal({items:[{name:'Service',quantity:2,price:10}],discount:2,taxRate:0}),{subtotal:20,discount:2,tax:0,total:18});});
+test('currency arithmetic rounds tax to cents',()=>{assert.equal(invoiceTotal({items:[{quantity:3,price:.1}],taxRate:7.5}).total,.32);});
+test('invoice rejects missing customer and invalid quantities',()=>{const d={...initial('invoice'),name:'Draft',due:'2026-11-10'};assert.match(validate('invoice',d),/Customer/);assert.match(validate('invoice',{...d,contactId:'c',items:[{name:'Service',quantity:0,price:10}]}),/quantity/);});
+test('pipeline rejects duplicate stage names',()=>{assert.match(validate('pipeline',{name:'Sales',stages:'Lead\nLead'}),/unique/);});
+test('form rejects ambiguous duplicate labels',()=>{assert.match(validate('form',{...initial('form'),name:'Lead',fields:[{name:'Email',type:'email'},{name:'Email',type:'text'}]}),/unique/);});
+test('calendar requires valid timezone and capacity',()=>{assert.equal(validate('calendar',{...initial('calendar'),name:'Discovery'}),null);assert.match(validate('calendar',{...initial('calendar'),name:'Discovery',timezone:'not-a-zone'}),/timezone/);assert.match(validate('calendar',{...initial('calendar'),name:'Discovery',capacity:1.5}),/capacity/);});
+test('appointment cannot end before it begins',()=>{assert.match(validate('appointment',{name:'Call',contactId:'c',calendarId:'cal',start:'2026-11-02T11:00',end:'2026-11-02T10:00'}),/End/);});
+test('workflow wait and action requirements validated',()=>{assert.match(validate('workflow',{...initial('workflow'),name:'Welcome',steps:[{type:'Wait',value:'oops'}]}),/positive/);assert.match(validate('workflow',{...initial('workflow'),name:'Welcome',steps:[{type:'Add note',value:''}]}),/value/);});
+test('URL fields reject executable schemes',()=>{assert.match(validate('triggerLink',{name:'Link',url:'javascript:alert(1)'}),/HTTP/);});
