@@ -6,7 +6,7 @@ A full-stack business workspace reconstructed from the adjacent GoHighLevel rese
 
 Node 22.13+ required. Install with the Sites skill dependency helper or `npm run install:ci`. Generate schema changes with `npm run db:generate`. Build with the Sites `build-site.mjs` helper. Apply the generated SQL to local D1 with the starter's documented migration command, then run `npm run dev`. Local sign-in: `/signin-with-chatgpt?return_to=/` (development identity only). Hosted identity is handled by Sites. Production is owner-private.
 
-Tests: `node --test tests/model.test.mjs`; typecheck: `node node_modules/typescript/bin/tsc --noEmit`. End-to-end tests require a running development server and its local authentication cookie.
+Run `npm test` for the model and API suites and `npm run typecheck` for TypeScript validation. End-to-end tests require a running development server and its local authentication cookie.
 
 ## Application
 
@@ -20,11 +20,13 @@ Site drafts use editable blocks and responsive preview. Publishing stores a sepa
 
 ## Provider and parity limits
 
-Manual payment receipts reconcile balances without charging customers. No live email, SMS, WhatsApp, voice, social publishing, payment collection, e-signature, external-calendar sync, review synchronization, DNS management, WordPress hosting or generative AI is connected. Marketplace cards state the adapter requirements. AI sandbox is a labeled keyword-based knowledge lookup, not an LLM. Marketing schedules are planning metadata, not dispatch jobs. SaaS plans are configuration, not automated billing/provisioning. Surveys/quizzes, affiliates, certificates, review widgets and chat widgets currently provide record/configuration editors rather than complete external runtime services. QR destination records do not yet generate QR images. Companies are currently grouped contact metadata, not independent company objects.
+Manual payment receipts reconcile balances without charging customers. No live email, SMS, WhatsApp, voice, social publishing, payment collection, e-signature, external-calendar sync, review synchronization, DNS management, WordPress hosting or generative AI is connected. Marketplace cards state the adapter requirements. AI sandbox is a labeled keyword-based knowledge lookup, not an LLM. Marketing schedules are planning metadata, not dispatch jobs. SaaS plans are configuration, not automated billing/provisioning. Surveys and quizzes support private test submissions, with stored responses and server-side quiz grades. Affiliates, certificates, review widgets and chat widgets have configuration editors. QR destination records do not yet generate QR images. Companies are currently grouped contact metadata, not independent company objects.
 
 Custom reports use a small set of live aggregate metrics rather than the full vendor widget catalog or attribution models. Forecast is an explicitly labeled illustrative stage-weighted calculation. There are no team invitations or multi-role permissions: each signed-in owner has isolated records. Listing reads are bounded to 2,000 records per workspace; large-scale pagination and production load testing remain necessary before broad commercial use. No end-to-end third-party delivery is claimed.
 
 ## Security / storage
+
+The hosted worker relies on the Sites gateway to authenticate requests and inject user identity headers. For independent hosting, restrict access to a trusted gateway that strips client-supplied identity headers and injects verified identity, or replace the identity adapter with an authenticated session implementation.
 
 No provider secrets are accepted through the app. Configure future secrets server-side through Sites, never in source or the browser. Files download with attachment disposition and nosniff. React escapes authored content; arbitrary HTML/scripts are not executed by the page builder. Cross-origin mutations are rejected. Snapshot import permits only configuration kinds, remaps internal references and resets published content/workflows to Draft. Customer records and integration credentials are excluded.
 
