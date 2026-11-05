@@ -112,3 +112,16 @@ test('saved quizzes grade and retain responses and surveys retain ungraded respo
   assert.equal(records.length,2);
   assert.deepEqual(records.find(row=>row.id===response.id).responses,[{question:'What worked?',answer:'Booking'}]);
 });
+
+test('imported website snapshots have no active release', async () => {
+  const site = await create('site', {name:'Site'});
+  await post({action:'publishSite',id:site.id});
+  const {snapshot}=await post({action:'snapshot'});
+  assert.equal((await post({action:'importSnapshot',snapshot},'destination')).status,200);
+  const imported=(await state('destination')).rows[0];
+  assert.equal(imported.status,'Draft');
+  assert.equal(imported.publishedAt,undefined);
+  const updated=await post({action:'save',kind:'site',id:imported.id,revision:imported.revision,data:imported},'destination');
+  assert.equal(updated.row.status,'Draft');
+  assert.equal(updated.row.publishedBlocks,undefined);
+});
